@@ -412,6 +412,10 @@ public final class Vulcanize {
               // part of our build process.
               return CheckLevel.OFF;
             }
+            if (error.getDefaultLevel() == CheckLevel.WARNING
+                && isLibrarySourceName(error.sourceName)) {
+              return CheckLevel.OFF;
+            }
             if (error.sourceName.startsWith("javascript/externs")
                 || error.sourceName.contains("com_google_javascript_closure_compiler_externs")) {
               // TODO(jart): Figure out why these "mismatch of the removeEventListener property on
@@ -591,6 +595,16 @@ public final class Vulcanize {
         // The following are intended to filter out URLs with Polymer variables.
         || (uri.contains("[[") && uri.contains("]]"))
         || (uri.contains("{{") && uri.contains("}}"));
+  }
+
+  private static boolean isLibrarySourceName(String sourceName) {
+    final List<String> libraryPrefixes = ImmutableList.of("/iron-", "/neon-", "/paper-");
+    for (final String prefix : libraryPrefixes) {
+      if (sourceName.startsWith(prefix)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static ImmutableMultimap<DiagnosticType, String> initDiagnosticGroups() {
